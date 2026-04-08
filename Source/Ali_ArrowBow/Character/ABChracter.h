@@ -5,92 +5,90 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "Ali_ArrowBowCharacter.generated.h"
+#include "ABChracter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
+class UABBowMechanicsComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-/**
- *  A simple player-controllable third person character
- *  Implements a controllable orbiting camera
- */
 UCLASS(abstract)
-class AAli_ArrowBowCharacter : public ACharacter
+class AABChracter : public ACharacter
 {
 	GENERATED_BODY()
-
-	/** Camera boom positioning the camera behind the character */
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 	
 protected:
-
-	/** Jump Input Action */
+	//Input Action
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* JumpAction;
-
-	/** Move Input Action */
+	
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MoveAction;
-
-	/** Look Input Action */
+	
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* LookAction;
-
-	/** Mouse Look Input Action */
+	
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
-public:
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* BowAimAction;
 
-	/** Constructor */
-	AAli_ArrowBowCharacter();	
+	UPROPERTY(VisibleAnywhere, Category="ABSettings|Bow")
+	UABBowMechanicsComponent* BowMechanicsComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "ABSettings|Bow")
+	float DefaultFOV;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ABSettings|Bow")
+	float AimFOV;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ABSettings|Bow")
+	FVector AimBoomOffset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ABSettings|Bow")
+	FVector InitialBoomOffset;
+
+public:
+	AABChracter();	
 
 protected:
-
-	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-
-	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
-
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-public:
+	void BowAimBegin(const FInputActionValue& Value);
+	void BowAimEnd(const FInputActionValue& Value);
 
-	/** Handles move inputs from either controls or UI interfaces */
+	void AimCameraBegin();
+	void AimCameraEnd();
+
+public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoMove(float Right, float Forward);
-
-	/** Handles look inputs from either controls or UI interfaces */
+	
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoLook(float Yaw, float Pitch);
-
-	/** Handles jump pressed inputs from either controls or UI interfaces */
+	
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpStart();
-
-	/** Handles jump pressed inputs from either controls or UI interfaces */
+	
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
 public:
-
-	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
-	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
 
