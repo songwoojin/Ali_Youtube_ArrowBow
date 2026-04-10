@@ -45,6 +45,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category="ABSettings|Bow")
 	UABBowMechanicsComponent* BowMechanicsComponent;
+
+	bool bIsBowAiming;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "ABSettings|Bow")
 	float DefaultFOV;
@@ -63,7 +65,8 @@ public:
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	virtual void Tick(float DeltaTime) override;
+	
 protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -73,6 +76,7 @@ protected:
 
 	void AimCameraBegin();
 	void AimCameraEnd();
+	void CameraZoomInterp(float DeltaTime);
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Input")

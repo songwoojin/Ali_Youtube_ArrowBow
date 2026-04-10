@@ -22,8 +22,11 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	void EquipBow();
+	void InitRotationRate();
+	
 	UFUNCTION(BlueprintCallable)
 	void AimBegin();
+	
 	UFUNCTION(BlueprintCallable)
 	void AimEnd();
 	
@@ -40,5 +43,9 @@ protected:
 	UPROPERTY()
 	ACharacter* Character;
 
-	bool bIsAimging;
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsAiming;
+
+	FRotator AimRotationRate;
+	FRotator InitialRotationRate;
 };

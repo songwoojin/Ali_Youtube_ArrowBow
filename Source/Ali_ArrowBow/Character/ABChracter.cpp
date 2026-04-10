@@ -14,6 +14,7 @@
 
 AABChracter::AABChracter()
 	:BowMechanicsComponent(nullptr)
+	,bIsBowAiming(false)
 	,DefaultFOV(90.0f)
 	,AimFOV(60.0f)
 	,AimBoomOffset(FVector(100.0f,75.0f,45.0f))
@@ -69,6 +70,13 @@ void AABChracter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	}
 }
 
+void AABChracter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	CameraZoomInterp(DeltaTime);
+}
+
 void AABChracter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -86,13 +94,15 @@ void AABChracter::Look(const FInputActionValue& Value)
 void AABChracter::BowAimBegin(const FInputActionValue& Value)
 {
 	BowMechanicsComponent->AimBegin();
-	AimCameraBegin();
+	bIsBowAiming=true;
+	//AimCameraBegin();
 }
 
 void AABChracter::BowAimEnd(const FInputActionValue& Value)
 {
 	BowMechanicsComponent->AimEnd();
-	AimCameraEnd();
+	bIsBowAiming=false;
+	//AimCameraEnd();
 }
 
 void AABChracter::AimCameraBegin()
@@ -105,6 +115,37 @@ void AABChracter::AimCameraEnd()
 {
 	FollowCamera->SetFieldOfView(DefaultFOV);
 	CameraBoom->SocketOffset=InitialBoomOffset;
+}
+
+void AABChracter::CameraZoomInterp(float DeltaTime)
+{
+	//FOV	
+	float TargetFOV = bIsBowAiming ? AimFOV : DefaultFOV;
+
+	if (FMath::Abs(FollowCamera->FieldOfView - TargetFOV) > 0.1f)
+	{
+		float NewFOV = FMath::FInterpTo(
+			FollowCamera->FieldOfView,
+			TargetFOV,
+			DeltaTime,
+			10.f
+		);
+		
+		FollowCamera->SetFieldOfView(NewFOV);
+	}
+	
+	//Camera Socket Offset
+	FVector TargetOffset = bIsBowAiming ? AimBoomOffset : InitialBoomOffset;
+
+	if (!CameraBoom->SocketOffset.Equals(TargetOffset, 0.1f))
+	{
+		CameraBoom->SocketOffset = FMath::VInterpTo(
+		CameraBoom->SocketOffset,
+		TargetOffset,
+		DeltaTime,
+		10.f
+		);
+	}
 }
 
 void AABChracter::DoMove(float Right, float Forward)
