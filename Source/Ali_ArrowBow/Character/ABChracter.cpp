@@ -63,6 +63,9 @@ void AABChracter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		
 		EnhancedInputComponent->BindAction(BowAimAction, ETriggerEvent::Started, this, &AABChracter::BowAimBegin);
 		EnhancedInputComponent->BindAction(BowAimAction, ETriggerEvent::Completed, this, &AABChracter::BowAimEnd);
+		
+		EnhancedInputComponent->BindAction(FireBowAction, ETriggerEvent::Started, this, &AABChracter::DrawBowBegin);
+		EnhancedInputComponent->BindAction(FireBowAction, ETriggerEvent::Completed, this, &AABChracter::FireArrowBegin);
 	}
 	else
 	{
@@ -103,6 +106,16 @@ void AABChracter::BowAimEnd(const FInputActionValue& Value)
 	BowMechanicsComponent->AimEnd();
 	bIsBowAiming=false;
 	//AimCameraEnd();
+}
+
+void AABChracter::DrawBowBegin(const FInputActionValue& Value)
+{
+	BowMechanicsComponent->DrawBegin();
+}
+
+void AABChracter::FireArrowBegin(const FInputActionValue& Value)
+{
+	BowMechanicsComponent->FireArrowBegin();
 }
 
 void AABChracter::AimCameraBegin()

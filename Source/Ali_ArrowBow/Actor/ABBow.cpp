@@ -4,6 +4,7 @@
 
 AABBow::AABBow()
 	:CurrentBowState(EBowState::Idle)
+	,MaxDrawTime(1.0f)
 {
 	PrimaryActorTick.bCanEverTick = false;
 

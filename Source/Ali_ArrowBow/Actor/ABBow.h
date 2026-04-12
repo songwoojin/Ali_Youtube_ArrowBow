@@ -22,6 +22,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 	void SetBowState(EBowState NewState){CurrentBowState=NewState;}
+	float GetMaxDrawTime() const {return MaxDrawTime;}
 
 protected:
 	UPROPERTY(VisibleAnywhere,category=Settings)
@@ -29,4 +30,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	EBowState CurrentBowState;
+
+	UPROPERTY(EditAnywhere)
+	float MaxDrawTime;
 };

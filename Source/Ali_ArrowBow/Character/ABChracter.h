@@ -43,6 +43,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* BowAimAction;
 
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* FireBowAction;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="ABSettings|Bow")
 	UABBowMechanicsComponent* BowMechanicsComponent;
 
@@ -73,6 +76,9 @@ protected:
 
 	void BowAimBegin(const FInputActionValue& Value);
 	void BowAimEnd(const FInputActionValue& Value);
+
+	void DrawBowBegin(const FInputActionValue& Value);
+	void FireArrowBegin(const FInputActionValue& Value);
 
 	void AimCameraBegin();
 	void AimCameraEnd();

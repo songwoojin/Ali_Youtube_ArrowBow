@@ -14,6 +14,10 @@ UABBowMechanicsComponent::UABBowMechanicsComponent()
 	,Bow(nullptr)
 	,Character(nullptr)
 	,bIsAiming(false)
+	,bIsDrawingBow(false)
+	,DrawTime(0.0)
+	,DrawIncrementTime(0.333333)
+	,bIsFiringBow(false)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
@@ -91,10 +95,11 @@ void UABBowMechanicsComponent::DestroyArrow()
 	if (IsValid(Arrow))
 	{
 		Arrow->Destroy();
+		Arrow=nullptr;
 	}
 }
 
-void UABBowMechanicsComponent::FireArrowBegin()
+void UABBowMechanicsComponent::FireAimedArrow()
 {
 	if (IsValid(Arrow))
 	{
@@ -103,9 +108,45 @@ void UABBowMechanicsComponent::FireArrowBegin()
 		if (ABCharacter)
 		{
 			FVector Direction=ABCharacter->GetFollowCamera()->GetForwardVector();
-			Arrow->Fire(Direction);
+			//UE_LOG(LogTemp, Warning, TEXT("Dir: %s"), *Direction.ToString());
+
+			float Strength=FMath::GetRangePct(0.0f,Bow->GetMaxDrawTime(),DrawTime);
+			Strength = FMath::Clamp(Strength,-1.0f,1.0f);
+			Arrow->Fire(Direction,Strength);
+			Arrow=nullptr;
 		}
 	}
+}
+
+void UABBowMechanicsComponent::FireArrowBegin()
+{
+	if (!bIsDrawingBow)	return;
+
+	//짧게 눌렀을 경우 제대로 날아가지 않고 남아있는 버그 발생
+	if (!IsValid(Arrow))	return;
+	
+	bIsFiringBow=true;
+	FireAimedArrow();
+	DrawEnd();
+
+	//원래는 애니메이션 끝날때 실행되도록 해야하지만 임시로 1초후 끝내도록
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		TimerHandle,
+		this,
+		&UABBowMechanicsComponent::FireArrowEnd,
+		1.0f,   // 시간 (초)
+		false
+	);// 반복 여부
+}
+
+void UABBowMechanicsComponent::FireArrowEnd()
+{
+	bIsFiringBow=false;
+
+	if (!bIsAiming)	return;
+
+	AimBegin();
 }
 
 void UABBowMechanicsComponent::AimBegin()
@@ -128,6 +169,7 @@ void UABBowMechanicsComponent::AimBegin()
 void UABBowMechanicsComponent::AimEnd()
 {
 	bIsAiming=false;
+	DrawEnd();
 	UCharacterMovementComponent* MoveComp = Character->GetCharacterMovement();
 	if (MoveComp)
 	{
@@ -138,5 +180,38 @@ void UABBowMechanicsComponent::AimEnd()
 	
 	Bow->SetBowState(EBowState::Idle);
 	DestroyArrow();
+}
+
+void UABBowMechanicsComponent::DrawBegin()
+{
+	if (!bIsDrawingBow && bIsAiming)
+	{
+		bIsDrawingBow=true;
+
+		GetWorld()->GetTimerManager().SetTimer(
+		DrawTimerHandle,
+		this,
+		&UABBowMechanicsComponent::IncrementDrawTime,
+		DrawIncrementTime,   // 시간 (초)
+		true   // 반복 여부
+		);
+
+		Bow->SetBowState(EBowState::Draw);
+	}
+}
+
+void UABBowMechanicsComponent::DrawEnd()
+{
+	bIsDrawingBow=false;
+	DrawTime=0.0f;
+	GetWorld()->GetTimerManager().ClearTimer(DrawTimerHandle);
+	DrawTimerHandle.Invalidate();
+	Bow->SetBowState(EBowState::Idle);
+}
+
+void UABBowMechanicsComponent::IncrementDrawTime()
+{
+	DrawTime+=DrawIncrementTime;
+	UE_LOG(LogTemp,Log,TEXT("DrawTime: %f"),DrawTime);
 }
 

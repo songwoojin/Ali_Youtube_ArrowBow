@@ -22,24 +22,29 @@ protected:
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	//Bow
-	void SpawnBow();
-	void EquipBow();
-	void InitRotationRate();
-
-	//Arrow
-	void SpawnArrow();
-	void DestroyArrow();
-
-	UFUNCTION(BlueprintCallable)
-	void FireArrowBegin();
 	
 	UFUNCTION(BlueprintCallable)
 	void AimBegin();
 	
 	UFUNCTION(BlueprintCallable)
 	void AimEnd();
+
+	void DrawBegin();
+	void FireArrowBegin();
+protected:
+	//Bow
+	void SpawnBow();
+	void EquipBow();
+	void InitRotationRate();
+	
+	//Arrow
+	void FireArrowEnd();
+	void SpawnArrow();
+	void DestroyArrow();
+	void FireAimedArrow();
+	
+	void DrawEnd();
+	void IncrementDrawTime();
 	
 protected:
 	//Bow
@@ -61,6 +66,14 @@ protected:
 	FRotator AimRotationRate;
 	FRotator InitialRotationRate;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsDrawingBow;
+	FTimerHandle DrawTimerHandle;
+	float DrawTime;
+	float DrawIncrementTime;
+
+	bool bIsFiringBow;
+	
 	//Arrow
 	UPROPERTY(EditAnywhere,category=Settings)
 	TSubclassOf<AActor> ArrowClass;

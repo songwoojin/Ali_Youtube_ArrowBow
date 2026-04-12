@@ -23,18 +23,27 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void Fire(FVector Direction);
+	void Fire(FVector Direction,float Strength);
 
 protected:
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* BoxComponent;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,Category="Settings")
 	USkeletalMeshComponent* SkeletalMesh;
 
 	UPROPERTY(VisibleAnywhere)
 	UProjectileMovementComponent* ProjectileMovement;
 
-	UPROPERTY(EditAnywhere)
-	float Speed;
+	UPROPERTY(EditAnywhere,Category="Settings")
+	float MinSpeed;
+
+	UPROPERTY(EditAnywhere,Category="Settings")
+	float MaxSpeed;
+
+	UPROPERTY(EditAnywhere,Category="Settings")
+	float MinGravity;
+
+	UPROPERTY(EditAnywhere,Category="Settings")
+	float MaxGravity;
 };
