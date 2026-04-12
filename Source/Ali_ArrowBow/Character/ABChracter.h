@@ -43,7 +43,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* BowAimAction;
 
-	UPROPERTY(VisibleAnywhere, Category="ABSettings|Bow")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="ABSettings|Bow")
 	UABBowMechanicsComponent* BowMechanicsComponent;
 
 	bool bIsBowAiming;

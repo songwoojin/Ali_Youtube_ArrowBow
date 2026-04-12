@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "ABBowMechanicsComponent.generated.h"
 
+class AABBow;
+class AABArrow;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ALI_ARROWBOW_API UABBowMechanicsComponent : public UActorComponent
@@ -20,9 +22,18 @@ protected:
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+
+	//Bow
+	void SpawnBow();
 	void EquipBow();
 	void InitRotationRate();
+
+	//Arrow
+	void SpawnArrow();
+	void DestroyArrow();
+
+	UFUNCTION(BlueprintCallable)
+	void FireArrowBegin();
 	
 	UFUNCTION(BlueprintCallable)
 	void AimBegin();
@@ -31,11 +42,12 @@ public:
 	void AimEnd();
 	
 protected:
+	//Bow
 	UPROPERTY(EditAnywhere,category=Settings)
 	TSubclassOf<AActor> BowClass;
 
 	UPROPERTY()
-	AActor* Bow;
+	AABBow* Bow;
 
 	UPROPERTY(EditAnywhere,category=Settings)
 	FName BowSocketName;
@@ -48,4 +60,15 @@ protected:
 
 	FRotator AimRotationRate;
 	FRotator InitialRotationRate;
+
+	//Arrow
+	UPROPERTY(EditAnywhere,category=Settings)
+	TSubclassOf<AActor> ArrowClass;
+
+	UPROPERTY()
+	AABArrow* Arrow;
+
+	UPROPERTY(EditAnywhere,category=Settings)
+	FName ArrowSocketName;
+	
 };
