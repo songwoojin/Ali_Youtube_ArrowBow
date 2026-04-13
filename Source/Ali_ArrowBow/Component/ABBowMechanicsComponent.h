@@ -9,6 +9,9 @@
 class AABBow;
 class AABArrow;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimBegin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimEnd);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ALI_ARROWBOW_API UABBowMechanicsComponent : public UActorComponent
 {
@@ -37,14 +40,25 @@ protected:
 	void EquipBow();
 	void InitRotationRate();
 	
+	UFUNCTION()
+	void OnFireBowMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	
 	//Arrow
 	void FireArrowEnd();
 	void SpawnArrow();
 	void DestroyArrow();
 	void FireAimedArrow();
+	FVector CalculateAimDirection();
 	
 	void DrawEnd();
 	void IncrementDrawTime();
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnAimBegin OnAimBegin;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnAimEnd OnAimEnd;
 	
 protected:
 	//Bow
@@ -72,7 +86,10 @@ protected:
 	float DrawTime;
 	float DrawIncrementTime;
 
-	bool bIsFiringBow;
+	bool bIsFiringArrow;
+
+	UPROPERTY(EditAnywhere,category=Settings)
+	UAnimMontage* FireBowMontage;
 	
 	//Arrow
 	UPROPERTY(EditAnywhere,category=Settings)

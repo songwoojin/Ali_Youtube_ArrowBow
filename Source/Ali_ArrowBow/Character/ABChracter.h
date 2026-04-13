@@ -63,11 +63,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "ABSettings|Bow")
 	FVector InitialBoomOffset;
 
+	//HUD
+	UPROPERTY(EditDefaultsOnly, Category = "ABSettings|UI")
+	TSubclassOf<UUserWidget> PlayerHudWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> PlayerHudWidget;
+
 public:
 	AABChracter();	
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	
 protected:
@@ -83,6 +91,7 @@ protected:
 	void AimCameraBegin();
 	void AimCameraEnd();
 	void CameraZoomInterp(float DeltaTime);
+	void CreateHud();
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Input")

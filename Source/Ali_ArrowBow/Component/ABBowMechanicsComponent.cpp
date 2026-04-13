@@ -17,7 +17,7 @@ UABBowMechanicsComponent::UABBowMechanicsComponent()
 	,bIsDrawingBow(false)
 	,DrawTime(0.0)
 	,DrawIncrementTime(0.333333)
-	,bIsFiringBow(false)
+	,bIsFiringArrow(false)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
@@ -74,8 +74,20 @@ void UABBowMechanicsComponent::InitRotationRate()
 	}
 }
 
+void UABBowMechanicsComponent::OnFireBowMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage != FireBowMontage) return;
+	
+	FireArrowEnd();
+}
+
 void UABBowMechanicsComponent::SpawnArrow()
 {
+	UE_LOG(LogTemp, Warning, TEXT("SpawnArrow"));
+
+	//Test Bug
+	if (IsValid(Arrow)) return;
+	
 	if (ArrowClass)
 	{
 		Arrow=Cast<AABArrow>(GetWorld()->SpawnActor(ArrowClass));
@@ -101,51 +113,101 @@ void UABBowMechanicsComponent::DestroyArrow()
 
 void UABBowMechanicsComponent::FireAimedArrow()
 {
+	UE_LOG(LogTemp, Warning, TEXT("FireAimedArrow"));
+	
 	if (IsValid(Arrow))
 	{
 		Arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		//UE_LOG(LogTemp,Warning,TEXT("Arrow Detach"));
 		AABChracter* ABCharacter=Cast<AABChracter>(Character);
 		if (ABCharacter)
 		{
-			FVector Direction=ABCharacter->GetFollowCamera()->GetForwardVector();
+			FVector Direction=CalculateAimDirection();
 			//UE_LOG(LogTemp, Warning, TEXT("Dir: %s"), *Direction.ToString());
 
 			float Strength=FMath::GetRangePct(0.0f,Bow->GetMaxDrawTime(),DrawTime);
 			Strength = FMath::Clamp(Strength,-1.0f,1.0f);
 			Arrow->Fire(Direction,Strength);
+
+			//TestBug
 			Arrow=nullptr;
 		}
 	}
 }
 
+FVector UABBowMechanicsComponent::CalculateAimDirection()
+{
+	AABChracter* ABCharacter=Cast<AABChracter>(Character);
+	if (!ABCharacter)	return FVector::ZeroVector;
+
+	FVector CameraLocation=ABCharacter->GetFollowCamera()->GetComponentLocation();
+	FVector CameraDirection=ABCharacter->GetFollowCamera()->GetForwardVector();
+	const float Distance=10000.0f;
+	FVector TargetLocation=CameraLocation+CameraDirection*Distance;
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(ABCharacter);
+	bool bHit=GetWorld()->LineTraceSingleByChannel(Hit,CameraLocation,TargetLocation,ECollisionChannel::ECC_Visibility,Params);
+
+	if (bHit)
+	{
+		TargetLocation=Hit.Location;
+	}
+
+	FVector StartLocation=FVector(FVector::ZeroVector);
+	if (IsValid(Arrow))
+	{
+		StartLocation=Arrow->GetActorLocation();
+	}
+
+	FVector Direction=(TargetLocation-StartLocation).GetSafeNormal();
+	
+	// 디버그 라인
+	DrawDebugLine(
+		GetWorld(),
+		StartLocation,
+		TargetLocation,
+		bHit ? FColor::Red : FColor::Green,
+		false,
+		1.0f,
+		0,
+		1.0f
+	);
+
+	return Direction;
+}
+
 void UABBowMechanicsComponent::FireArrowBegin()
 {
 	if (!bIsDrawingBow)	return;
-
-	//짧게 눌렀을 경우 제대로 날아가지 않고 남아있는 버그 발생
-	if (!IsValid(Arrow))	return;
+	if (bIsFiringArrow) return;
 	
-	bIsFiringBow=true;
+	bIsFiringArrow=true;
 	FireAimedArrow();
 	DrawEnd();
-
-	//원래는 애니메이션 끝날때 실행되도록 해야하지만 임시로 1초후 끝내도록
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandle,
-		this,
-		&UABBowMechanicsComponent::FireArrowEnd,
-		1.0f,   // 시간 (초)
-		false
-	);// 반복 여부
+	
+	if (FireBowMontage)
+	{
+		UAnimInstance* AnimInstance=Character->GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			AnimInstance->OnMontageEnded.RemoveDynamic(this,&UABBowMechanicsComponent::OnFireBowMontageEnded);
+			AnimInstance->OnMontageEnded.AddDynamic(this,&UABBowMechanicsComponent::OnFireBowMontageEnded);
+			AnimInstance->Montage_Play(FireBowMontage);
+		}
+	}
 }
 
 void UABBowMechanicsComponent::FireArrowEnd()
 {
-	bIsFiringBow=false;
+	bIsFiringArrow=false;
 
 	if (!bIsAiming)	return;
 
+	//Test Bug
+	//Arrow=nullptr;
+	
 	AimBegin();
 }
 
@@ -164,6 +226,8 @@ void UABBowMechanicsComponent::AimBegin()
 	Bow->SetBowState(EBowState::Aim);
 	SpawnArrow();
 
+	OnAimBegin.Broadcast();
+
 }
 
 void UABBowMechanicsComponent::AimEnd()
@@ -180,6 +244,7 @@ void UABBowMechanicsComponent::AimEnd()
 	
 	Bow->SetBowState(EBowState::Idle);
 	DestroyArrow();
+	OnAimEnd.Broadcast();
 }
 
 void UABBowMechanicsComponent::DrawBegin()
@@ -197,6 +262,7 @@ void UABBowMechanicsComponent::DrawBegin()
 		);
 
 		Bow->SetBowState(EBowState::Draw);
+		
 	}
 }
 

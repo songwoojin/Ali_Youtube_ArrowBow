@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Ali_ArrowBow.h"
+#include "Blueprint/UserWidget.h"
 #include "Component/ABBowMechanicsComponent.h"
 
 AABChracter::AABChracter()
@@ -71,6 +72,13 @@ void AABChracter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	{
 		UE_LOG(LogAli_ArrowBow, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AABChracter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CreateHud();
 }
 
 void AABChracter::Tick(float DeltaTime)
@@ -158,6 +166,19 @@ void AABChracter::CameraZoomInterp(float DeltaTime)
 		DeltaTime,
 		10.f
 		);
+	}
+}
+
+void AABChracter::CreateHud()
+{
+	if (PlayerHudWidgetClass)
+	{
+		PlayerHudWidget=CreateWidget<UUserWidget>(GetWorld(),PlayerHudWidgetClass);
+
+		if (PlayerHudWidget)
+		{
+			PlayerHudWidget->AddToViewport();
+		}
 	}
 }
 
