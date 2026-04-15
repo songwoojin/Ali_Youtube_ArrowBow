@@ -11,6 +11,8 @@ class AABArrow;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimBegin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimEnd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDrawOnGoing,float,MaxDrawTime,float,DrawTime);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDrawEnd);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ALI_ARROWBOW_API UABBowMechanicsComponent : public UActorComponent
@@ -59,6 +61,12 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnAimEnd OnAimEnd;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDrawOnGoing OnDrawOnGoing;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDrawEnd OnDrawEnd;
 	
 protected:
 	//Bow

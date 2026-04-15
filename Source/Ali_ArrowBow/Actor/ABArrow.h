@@ -6,8 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "ABArrow.generated.h"
 
+class UNiagaraComponent;
 class UBoxComponent;
 class UProjectileMovementComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class ALI_ARROWBOW_API AABArrow : public AActor
@@ -19,6 +21,16 @@ public:
 	AABArrow();
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnBoxCollisionOverlapBegin(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -46,4 +58,24 @@ protected:
 
 	UPROPERTY(EditAnywhere,Category="Settings")
 	float MaxGravity;
+
+	FVector Velocity;
+	
+	UPROPERTY(EditAnywhere,Category="Settings")
+	USoundBase* ArrowWhooshSound;
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* TrailEffectLocation;
+
+	UPROPERTY(EditAnywhere,Category="Settings")
+	UNiagaraSystem* TrailEffect;
+
+	UPROPERTY()
+	UNiagaraComponent* TrailComponent;
+	
+	UPROPERTY(EditAnywhere,Category="Settings")
+	USoundBase* ArrowHitSound;
+
+	UPROPERTY(EditAnywhere,Category="Settings")
+	UNiagaraSystem* HitImpactEffect;
 };

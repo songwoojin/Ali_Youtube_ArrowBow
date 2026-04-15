@@ -23,14 +23,22 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void SetBowState(EBowState NewState){CurrentBowState=NewState;}
 	float GetMaxDrawTime() const {return MaxDrawTime;}
+	void DrawBegin();
+	void DrawEnd();
 
 protected:
-	UPROPERTY(VisibleAnywhere,category=Settings)
+	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* SkeletalMesh;
 
 	UPROPERTY(BlueprintReadOnly)
 	EBowState CurrentBowState;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,category=Settings)
 	float MaxDrawTime;
+
+	UPROPERTY(EditAnywhere,category=Settings)
+	USoundBase* DrawSound;
+
+	UPROPERTY()
+	UAudioComponent* AudioComp;
 };

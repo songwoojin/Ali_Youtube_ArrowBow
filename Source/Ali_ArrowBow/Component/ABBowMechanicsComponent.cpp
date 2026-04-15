@@ -91,6 +91,7 @@ void UABBowMechanicsComponent::SpawnArrow()
 	if (ArrowClass)
 	{
 		Arrow=Cast<AABArrow>(GetWorld()->SpawnActor(ArrowClass));
+		Arrow->SetInstigator(Character);
 		//Arrow->SetOwner(Character);
 		if (Arrow)
 		{
@@ -163,17 +164,17 @@ FVector UABBowMechanicsComponent::CalculateAimDirection()
 
 	FVector Direction=(TargetLocation-StartLocation).GetSafeNormal();
 	
-	// 디버그 라인
-	DrawDebugLine(
-		GetWorld(),
-		StartLocation,
-		TargetLocation,
-		bHit ? FColor::Red : FColor::Green,
-		false,
-		1.0f,
-		0,
-		1.0f
-	);
+	// NOTE::Debug Draw
+	// DrawDebugLine(
+	// 	GetWorld(),
+	// 	StartLocation,
+	// 	TargetLocation,
+	// 	bHit ? FColor::Red : FColor::Green,
+	// 	false,
+	// 	1.0f,
+	// 	0,
+	// 	1.0f
+	// );
 
 	return Direction;
 }
@@ -262,7 +263,8 @@ void UABBowMechanicsComponent::DrawBegin()
 		);
 
 		Bow->SetBowState(EBowState::Draw);
-		
+
+		Bow->DrawBegin();
 	}
 }
 
@@ -273,11 +275,15 @@ void UABBowMechanicsComponent::DrawEnd()
 	GetWorld()->GetTimerManager().ClearTimer(DrawTimerHandle);
 	DrawTimerHandle.Invalidate();
 	Bow->SetBowState(EBowState::Idle);
+	Bow->DrawEnd();
+	OnDrawEnd.Broadcast();
 }
 
 void UABBowMechanicsComponent::IncrementDrawTime()
 {
 	DrawTime+=DrawIncrementTime;
-	UE_LOG(LogTemp,Log,TEXT("DrawTime: %f"),DrawTime);
+	//UE_LOG(LogTemp,Log,TEXT("DrawTime: %f"),DrawTime);
+
+	OnDrawOnGoing.Broadcast(Bow->GetMaxDrawTime(),DrawTime);
 }
 
